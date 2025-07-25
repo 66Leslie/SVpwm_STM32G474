@@ -156,6 +156,10 @@ void user_regulator_init(void)
     HAL_TIMEx_PWMN_Start(&htim1,TIM_CHANNEL_2);
     HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_3);   // ADC触发通道
 
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);   // 启用TIM8 PWM输出
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
+
     OLED_Init();
     OLED_Clear();
     OLED_ShowString(0, 0, "Init SOGI-QSG", OLED_8X16);
@@ -195,6 +199,13 @@ void user_regulator_init(void)
 
     // 初始化参考信号选择
     current_reference_signal = REF_SIGNAL_INTERNAL;  // 默认使用外部参考信号
+
+    // 初始化SVPWM模块
+    SVPWM_Init();
+
+    // 设置目标频率为50Hz
+    SVPWM_SetTargetFreq(50.0f);
+    user_regulator_info("SVPWM module initialized, target frequency: 50Hz");
 }
 
 // ============================================================================
@@ -314,7 +325,7 @@ void user_regulator_tim1_callback(void)
 }
 
 // ============================================================================
-// TIM8中断回调函数 - 三相PWM控制 (10kHz频率)
+// TIM8中断回调函数 - 三相SVPWM控制 (10kHz频率)
 // ============================================================================
 void user_regulator_tim8_callback(void)
 {
@@ -326,10 +337,7 @@ void user_regulator_tim8_callback(void)
         return;
     }
 
-    // ========== 2. 获取锁相环输出的cos_theta ==========
-    float cos_theta = SogiQsg_GetCos(&g_sogi_qsg);
-
-    // ========== 3. 控制算法 - 获取最终调制比 ==========
+    // ========== 2. 获取最终调制比 ==========
     float final_modulation_ratio = 0.0f;
 
     switch (current_control_mode) {
@@ -353,28 +361,17 @@ void user_regulator_tim8_callback(void)
             break;
     }
 
-    // ========== 4. 调制比限制 ==========
+    // ========== 3. 调制比限制 ==========
     if (final_modulation_ratio > 1.0f) final_modulation_ratio = 1.0f;
-    if (final_modulation_ratio < -1.0f) final_modulation_ratio = -1.0f;
+    if (final_modulation_ratio < 0.0f) final_modulation_ratio = 0.0f;  // SVPWM调制比应为正值
 
-    // ========== 5. 三相SPWM生成 (相位差120°) ==========
-    // A相：cos_theta (0°)
-    float cos_theta_A = cos_theta;
-    // B相：cos(theta - 120°) = cos_theta * cos(120°) + sin_theta * sin(120°)
-    float sin_theta = SogiQsg_GetSin(&g_sogi_qsg);
-    float cos_theta_B = cos_theta * (-0.5f) + sin_theta * (0.866025f);  // cos(120°)=-0.5, sin(120°)=√3/2
-    // C相：cos(theta + 120°) = cos_theta * cos(120°) - sin_theta * sin(120°)
-    float cos_theta_C = cos_theta * (-0.5f) - sin_theta * (0.866025f);
+    // ========== 4. 更新SVPWM调制比 ==========
+    SVPWM_SetMa(final_modulation_ratio);
 
-    // ========== 6. 计算三相PWM占空比 ==========
-    uint32_t duty_cycle_A = (uint32_t)((-cos_theta_A + 1.0f) * 0.5f * PWM_PERIOD_TIM8 * final_modulation_ratio);
-    uint32_t duty_cycle_B = (uint32_t)((-cos_theta_B + 1.0f) * 0.5f * PWM_PERIOD_TIM8 * final_modulation_ratio);
-    uint32_t duty_cycle_C = (uint32_t)((-cos_theta_C + 1.0f) * 0.5f * PWM_PERIOD_TIM8 * final_modulation_ratio);
-
-    // ========== 7. 设置三相PWM占空比 ==========
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, duty_cycle_A);  // A相
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, duty_cycle_B);  // B相
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, duty_cycle_C);  // C相
+    // ========== 5. 执行SVPWM频率斜坡控制和空间矢量调制 ==========
+    if (svm.State) {  // 只有在SVPWM启动状态下才执行
+        SVPWM_FrequencyRampControl();
+    }
 }
 
 // ============================================================================
@@ -629,20 +626,20 @@ void Update_Disp(void)
 void Display_Manual_Mode_Page(void)
 {
     // 第1行 (0-15): 模式标题和PWM状态
-    OLED_Printf(0, 0, OLED_8X16, "Manual 1P:%s 3P:%s",
+    OLED_Printf(0, 0, OLED_8X16, "SVPWM 1P:%s 3P:%s",
                pwm_enabled ? "ON" : "OFF",
                three_phase_pwm_enabled ? "ON" : "OFF");
 
-    // 第2行 (16-31): 调制比 (大字体显示)
-    OLED_Printf(0, 16, OLED_8X16, "Mod: %.1f%%", modulation_ratio * 100.0f);
+    // 第2行 (16-31): 调制比和频率 (大字体显示)
+    OLED_Printf(0, 16, OLED_8X16, "Mod:%.1f%% F:%.1fHz", three_phase_modulation_ratio * 100.0f, fsin);
 
     // 第3行 (32-39): 输出测量值
     OLED_Printf(0, 32, OLED_6X8, "V_O:%.1fV I_O:%.2fA", ac_voltage_rms, ac_current_rms);
 
-    // 第4行 (40-47): PLL状态和参考信号
-    OLED_Printf(0, 40, OLED_6X8, "PLL:%s RefSig:%s",
+    // 第4行 (40-47): PLL状态和SVPWM状态
+    OLED_Printf(0, 40, OLED_6X8, "PLL:%s SVPWM:%s",
                SogiQsg_IsLocked(&g_sogi_qsg) ? "LOCK" : "UNLK",
-               Get_Reference_Signal_Name(current_reference_signal));
+               svm.State ? "RUN" : "STOP");
 
     // 第5行 (48-55): 按键提示
     OLED_Printf(0, 48, OLED_6X8, "K1/2:+/- K3:PWM");
@@ -1490,50 +1487,47 @@ const char* Get_Reference_Signal_Name(Reference_Signal_t signal_type)
 // ============================================================================
 
 /**
- * @brief 使能三相PWM输出 (TIM8)
+ * @brief 使能三相SVPWM输出 (TIM8)
  */
 void Three_Phase_PWM_Enable(void)
 {
     //shut down
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET);
-    // 启动TIM8的PWM输出
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);  // A相
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);  // B相
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);  // C相
 
-    // 启动TIM8的中断
-    HAL_TIM_Base_Start_IT(&htim8);
+    // 启动TIM8的PWM输出 (您手动添加的代码)
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);   // 启用TIM8 PWM输出
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
 
     // 设置使能标志
     three_phase_pwm_enabled = 1;
 
-    three_phase_info("Three Phase PWM Enabled (TIM8)");
+    // 启动SVPWM状态机和中断
+    SVPWM_State(1);  // 启动SVPWM状态机
+
+    three_phase_info("Three Phase SVPWM Enabled (TIM8)");
 }
 
 /**
- * @brief 禁用三相PWM输出 (TIM8)
+ * @brief 禁用三相SVPWM输出 (TIM8)
  */
 void Three_Phase_PWM_Disable(void)
 {
     //shut down
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET);
-    // 停止TIM8的PWM输出
-    HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);   // A相
-    HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_2);   // B相
-    HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_3);   // C相
 
-    // 停止TIM8的中断
-    HAL_TIM_Base_Stop_IT(&htim8);
+    // 停止TIM8的PWM输出
+    HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_3);
 
     // 清除使能标志
     three_phase_pwm_enabled = 0;
 
-    // 确保输出为0
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 0);
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, 0);
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, 0);
+    // 停止SVPWM状态机和中断
+    SVPWM_State(0);  // 停止SVPWM状态机
 
-    three_phase_info("Three Phase PWM Disabled (TIM8)");
+    three_phase_info("Three Phase SVPWM Disabled (TIM8)");
 }
 
 /**
@@ -1593,4 +1587,54 @@ void Test_Three_Phase_PWM(void)
     three_phase_info("=== 三相PWM测试完成 ===");
     three_phase_printf("请使用示波器观察PC6、PC7、PC8的波形");
     three_phase_printf("应该看到三相120°相位差的PWM波形");
+}
+
+/**
+ * @brief SVPWM测试函数
+ * @note 用于验证SVPWM功能，可在main函数中调用进行测试
+ */
+void Test_SVPWM_Function(void)
+{
+    three_phase_info("=== SVPWM测试开始 ===");
+
+    // 1. 设置为手动模式
+    Set_Control_Mode(CONTROL_MODE_MANUAL);
+    three_phase_info("设置为手动模式");
+
+    // 2. 设置内部参考信号
+    Set_Reference_Signal(REF_SIGNAL_INTERNAL);
+    three_phase_info("设置为内部参考信号");
+
+    // 3. 设置目标频率为50Hz
+    SVPWM_SetTargetFreq(50.0f);
+    three_phase_info("设置目标频率为50Hz");
+
+    // 4. 设置较小的调制比开始测试
+    SVPWM_SetMa(0.1f);
+    modulation_ratio = 0.1f;
+    three_phase_modulation_ratio = 0.1f;
+    three_phase_info("设置调制比为10%%");
+
+    // 5. 启动SVPWM
+    Three_Phase_PWM_Enable();
+    three_phase_info("SVPWM已启动");
+
+    // 6. 逐步增加调制比进行测试
+    for(int i = 1; i <= 5; i++) {
+        HAL_Delay(2000);  // 等待2秒
+        float ratio = 0.1f * i;
+        SVPWM_SetMa(ratio);
+        modulation_ratio = ratio;
+        three_phase_modulation_ratio = ratio;
+        three_phase_info("调制比设置为: %.1f%%", ratio * 100.0f);
+    }
+
+    // 7. 停止SVPWM
+    HAL_Delay(2000);
+    Three_Phase_PWM_Disable();
+    three_phase_info("SVPWM已停止");
+
+    three_phase_info("=== SVPWM测试完成 ===");
+    three_phase_printf("请使用示波器观察PC6、PC7、PC8的波形");
+    three_phase_printf("应该看到三相SVPWM波形，频率50Hz");
 }

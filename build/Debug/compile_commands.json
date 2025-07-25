@@ -109,6 +109,12 @@
 },
 {
   "directory": "D:/project/eletric_comp/codes/project3/build/Debug",
+  "command": "D:\\software_\\stm32cubeclt\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\\bin\\arm-none-eabi-gcc.exe -DDEBUG -DSTM32G474xx -DUSE_HAL_DRIVER -ID:/project/eletric_comp/codes/project3/Core/Inc -ID:/project/eletric_comp/codes/project3/Core/user -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Core/Inc -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32G4xx/Include -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/CMSIS/Include  -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -O0 -g3 -std=gnu11 -o CMakeFiles\\project3.dir\\Core\\user\\svpwm.c.obj -c D:\\project\\eletric_comp\\codes\\project3\\Core\\user\\svpwm.c",
+  "file": "D:\\project\\eletric_comp\\codes\\project3\\Core\\user\\svpwm.c",
+  "output": "CMakeFiles\\project3.dir\\Core\\user\\svpwm.c.obj"
+},
+{
+  "directory": "D:/project/eletric_comp/codes/project3/build/Debug",
   "command": "D:\\software_\\stm32cubeclt\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\\bin\\arm-none-eabi-gcc.exe -DDEBUG -DSTM32G474xx -DUSE_HAL_DRIVER -ID:/project/eletric_comp/codes/project3/Core/Inc -ID:/project/eletric_comp/codes/project3/Core/user -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Core/Inc -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32G4xx/Include -ID:/project/eletric_comp/codes/project3/cmake/stm32cubemx/../../Drivers/CMSIS/Include  -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -O0 -g3 -std=gnu11 -o CMakeFiles\\project3.dir\\Core\\user\\sogi_qsg.c.obj -c D:\\project\\eletric_comp\\codes\\project3\\Core\\user\\sogi_qsg.c",
   "file": "D:\\project\\eletric_comp\\codes\\project3\\Core\\user\\sogi_qsg.c",
   "output": "CMakeFiles\\project3.dir\\Core\\user\\sogi_qsg.c.obj"

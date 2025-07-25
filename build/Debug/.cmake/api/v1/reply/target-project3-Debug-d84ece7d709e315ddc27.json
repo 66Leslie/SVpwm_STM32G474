@@ -43,7 +43,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 60,
+				"line" : 61,
 				"parent" : 0
 			},
 			{
@@ -145,7 +145,8 @@
 				17,
 				18,
 				19,
-				20
+				20,
+				21
 			]
 		},
 		{
@@ -268,7 +269,8 @@
 				17,
 				18,
 				19,
-				20
+				20,
+				21
 			]
 		},
 		{
@@ -282,7 +284,6 @@
 			"name" : "Object Libraries",
 			"sourceIndexes" : 
 			[
-				21,
 				22,
 				23,
 				24,
@@ -307,7 +308,8 @@
 				43,
 				44,
 				45,
-				46
+				46,
+				47
 			]
 		}
 	],
@@ -419,6 +421,12 @@
 			"backtrace" : 6,
 			"compileGroupIndex" : 0,
 			"path" : "Core/user/sogi_pll.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "Core/user/svpwm.c",
 			"sourceGroupIndex" : 0
 		},
 		{

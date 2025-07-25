@@ -10,6 +10,7 @@
 #include "math.h"
 #include "sogi_qsg.h"  // 新增：基于老师算法的高效锁相模块
 #include "debug_config.h"  // 新增：调试配置文件
+#include "svpwm.h"  // 新增：SVPWM空间矢量脉宽调制模块
 
 
 
@@ -244,6 +245,13 @@ void Three_Phase_PWM_Enable(void);   // 使能三相PWM (TIM8)
 void Three_Phase_PWM_Disable(void);  // 禁用三相PWM (TIM8)
 void Set_Three_Phase_Modulation_Ratio(float ratio);  // 设置三相调制比
 void Test_Three_Phase_PWM(void);     // 三相PWM测试函数
+void Test_SVPWM_Function(void);      // SVPWM测试函数
+
+// ============================================================================
+// SVPWM外部变量声明 (来自svpwm.c)
+// ============================================================================
+extern float fsin;        // 目标频率设定值
+extern SVMParams svm;     // SVPWM参数结构体
 
 // ============================================================================
 // 信号质量检测和阈值锁相模块

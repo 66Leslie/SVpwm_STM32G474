@@ -131,6 +131,8 @@ int main(void)
     // 主循环 - 只调用用户调节器模块
     // ======================================================================
     user_regulator_main();
+    //Test_SVPWM_Function();
+    //Test_SVPWM();
   }
   /* USER CODE END 3 */
 }
@@ -191,7 +193,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if(htim->Instance == TIM1)  // 10kHz中断
   {
-    user_regulator_tim1_callback();
+    //user_regulator_tim1_callback();
   }
   else if(htim->Instance == TIM8)  // 10kHz中断 - 三相PWM控制
   {

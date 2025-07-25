@@ -50,6 +50,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         Core/user/user_regulator.c
         Core/user/data_process.c
         Core/user/sogi_pll.c
+        Core/user/svpwm.c
         Core/user/sogi_qsg.c  # 新增：基于老师算法的高效锁相模块
         Core/Src/OLED.c
         Core/Src/OLED_Data.c
