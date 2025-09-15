@@ -420,7 +420,7 @@ void user_regulator_adc_callback(const ADC_HandleTypeDef* hadc)
         }
 
         // 信号质量检测：更新信号缓冲区（使用滤波后的值）
-        Signal_Quality_Update((uint16_t)ref_filtered);
+        //Signal_Quality_Update((uint16_t)ref_filtered);
 
         // 【核心】根据参考信号选择更新锁相模块
         static uint32_t internal_counter = 0;

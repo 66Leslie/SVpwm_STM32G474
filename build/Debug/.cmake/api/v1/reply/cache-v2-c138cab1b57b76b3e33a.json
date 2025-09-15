@@ -1155,10 +1155,10 @@
 			[
 				{
 					"name" : "HELPSTRING",
-					"value" : "The CMake toolchain file"
+					"value" : "No help, variable specified on the command line."
 				}
 			],
-			"type" : "FILEPATH",
+			"type" : "UNINITIALIZED",
 			"value" : "D:/project/eletric_comp/codes/three_phase_svpwm/cmake/gcc-arm-none-eabi.cmake"
 		},
 		{

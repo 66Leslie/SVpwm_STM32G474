@@ -66,7 +66,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -O0 -g3 -std=gnu11"
+					"fragment" : " -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -O0 -g3 -std=gnu11"
 				}
 			],
 			"defines" : 
@@ -153,7 +153,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -x assembler-with-cpp -MMD -MP -g"
+					"fragment" : " -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -x assembler-with-cpp -MMD -MP -g"
 				}
 			],
 			"defines" : 
@@ -222,7 +222,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -O0 -g3",
+				"fragment" : "-mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -finput-charset=UTF-8 -fexec-charset=UTF-8 -O0 -g3",
 				"role" : "flags"
 			},
 			{
