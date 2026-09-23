@@ -1,3 +1,5 @@
+**中文** | [English](README.en.md)
+
 # SVpwm_STM32G474
 
 基于 STM32G474 微控制器的空间矢量脉宽调制（SVPWM）实现项目。
